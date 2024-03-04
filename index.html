@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lab 8 - Intro to ArcGIS Online</title>
+    <meta charset="utf-8">
+
+    <!-- CODE BLOCK: Materialize imports: -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> <!-- CITE: As per materializecss.com/icons.html (see USAGE) -->
+
+    <!-- CODE BLOCK: JQuery imports: -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+
+    <!-- CODE BLOCK: APIs for ArcGIS SDK for JavaScript: -->
+    <link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.26/"></script>
+
+<link rel="stylesheet" href="https://127.0.0.1:50143/stylesheet?id=FUJIHPcQ0Qw7r0HR"></head>
+
+<body>
+    <!-- <div class="container" style="width:100vw;">
+        NOTE: I removed the container because it was interrupting the width of my navbar,
+        as per CITE: https://stackoverflow.com/questions/52012973/making-full-width-navs-with-materialize
+    -->
+        <div class="row" style="display: flex; margin: 0%;"></div>
+            <div id="nav-bar" class="col m12"> <!-- ?: This DIV removes the nav-bar when viewport == small -->
+                <!-- <header class="navbar-fixed"> -->
+                    <!--
+                        CITE: Use of 'header' to fix navbar during scroll: youtube.com/watch?v=tH2BfJELqCo 
+                        WARNING: Fixing this header disrupts Materialize's 'sidenav' functionality!!!!!!!!
+                        CITE for warning above: https://github.com/Dogfalo/materialize/issues/3844
+                    -->
+                    <nav class="nav" style="width:100%; background-color: cornflowerblue;">
+                        <div class="nav-wrapper">
+
+                            <!-- CODE BLOCK: Trigger for Materialize's 'sidenav' pop-out menu functionality: -->
+                            <a id="menu" href="#" data-target="sidenav" class="sidenav-trigger right hide-on-med-and-up"><i class="material-icons">menu</i></a>
+
+                            <!-- CODE BLOCK: Website Logo: -->
+                            <a><img src="logo.png" style="max-height: 100%;"></a>
+
+                            <!-- CODE BLOCK: Navbar's menu for tablets and larger: -->
+                            <ul id="desktop-nav" class="right hide-on-small-and-down">
+                                <li><a href="http://20.163.244.94/index.html">Home Page</a></li>
+                                <li><a href="http://20.163.244.94/labs.html">GEOG677 Labs</a></li>
+                                <li><a href="http://20.163.244.94/contact.html">Contact</a></li>
+                            </ul>
+                    </nav>
+
+                    <!-- CODE BLOCK: Menu for Materialize's 'sidenav', for mobile only: -->
+                    <ul id="sidenav" class="sidenav">
+                        <li><a href="http://20.163.244.94/index.html">Home Page</a></li>
+                        <li><a href="http://20.163.244.94/labs.html">GEOG677 Labs</a></li>
+                        <li><a href="http://20.163.244.94/contact.html">Contact</a></li>
+                        <!-- 
+                            CITE: youtube.com/watch?v=tH2BfJELqCo 
+                            "The sidenav's list must be outside of <nav> but inside <header>"
+                        -->
+                    </ul>
+
+                <!-- </header> -->
+            </div>
+        </div>
+
+        <div class="row" style="display:flex; margin:0%"> <!-- ?: the 'display:flex' styling is what makes this row's columns the same height -->
+            
+            <!-- CODE BLOCK: Leftside control pane that hides when viewport == small or lower: -->
+            <div id="controlPanel" class="col m3 hide-on-med-and-down" style="font-size: smaller;">
+                <!-- NOTE: The DIV's style is inherited by all children elements: -->
+                <p id="opName" class="center red-text"><b>Maryland Hospitals</b></p>
+                <p>Use this map to locate Maryland hospitals along interstates and highways.</p>
+            </div>
+
+            <!-- CODE BLOCK: The Map (an image) that goes from 75% to 100% screen width as a fx of viewport size: -->
+            <div id="mapView" class="col s12 m9" style="margin: 0; padding: 0; width: 100%; height: 825px;"> <!-- ?: Map will be 75% of screen width for tablets and bigger; 100% for mobile -->
+            </div>
+
+        </div>
+
+    <!-- </div> -->
+
+    <script>
+
+    // CODE BLOCK: Activate Materialize's 'sidenav' functionality when DOC is ready:
+        document.addEventListener('DOMContentLoaded', function() {
+            var elems = document.querySelectorAll('.sidenav');
+           var instances = M.Sidenav.init(elems, {});
+        });
+        //NOTE: I used vanilla JS because I couldn't get the JQuery initialization to work
+
+    
+    // CODE BLOCK: ArcGIS SDK for JavaScript -- Implementation:
+
+        require(["esri/Map",
+        "esri/views/MapView",
+        "esri/layers/MapImageLayer",
+        "esri/widgets/LayerList",
+        "esri/widgets/BasemapGallery",
+        "esri/Basemap",
+        "esri/WebMap",
+        "esri/widgets/Legend"], function(Map,
+        MapView,MapImageLayer,LayerList,BasemapGallery,Basemap,WebMap,Legend){
+
+            const map = new WebMap({
+                portalItem: {
+                    id: "f5b5629a63ce40388b82529dcb372594"
+                },
+                basemap: "dark-gray" //Changes basemap for the imported webmap.
+
+            });
+
+            const view = new MapView({
+                map: map,
+                container: "mapView",
+                center: [-77.13176, 38.97316],
+                zoom: 8
+            });
+
+            let legend = new Legend({
+                view: view
+            });
+
+            var basemapGallery = new BasemapGallery({
+                view: mapView,
+                source: [Basemap.fromId("dark-gray"),
+                         Basemap.fromId("hybrid"),
+                         Basemap.fromId("topo-vector")]
+            });
+
+            view.ui.add(legend, "top-right");
+            mapView.ui.add(layerList, "bottom-left");
+            mapView.ui.add(basemapGallery, {position: "bottom-right"});
+      
+        });
+    
+    </script>
+</body>
+</html>
